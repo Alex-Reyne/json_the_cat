@@ -1,33 +1,31 @@
 const request = require('request');
-const arg = process.argv.slice(2);
 
-// allow user to request specific breed
+const fetchBreedDescription = function(breedName, callback) {
 
-const breedFetcher = (breed) => {
-
-  if (breed.length < 3) {
-    console.log(`Invalid breed name: '${breed}'`);
+  if (breedName.length < 3) {
+    console.log(`Invalid breed name: '${breedName}'`);
     return;
   }
   
-  request.get(`https://api.thecatapi.com/v1/breeds/search?q=${breed}`, (error, response, body) => {
+  request.get(`https://api.thecatapi.com/v1/breeds/search?q=${breedName}`, (error, response, body) => {
     
     if (error) {
-      console.log(error);
-      return;
-    }
-    
-    const data = JSON.parse(body);
-    
-    if (data[0] === undefined) {
-      console.log(`404: ${breed} does not exist.`);
+      callback(error);
       return;
     }
 
-    console.log(data[0].description);
+    const data = JSON.parse(body);
+    
+    if (data[0] === undefined) {
+      callback(`404: cat not found`);
+      return;
+    }
+    
+    let details = data[0].description;
+
+    callback(null, details);
   });
 
 };
 
-
-breedFetcher(arg[0]);
+module.exports = { fetchBreedDescription };
